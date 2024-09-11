@@ -1,0 +1,93 @@
+[gd_scene load_steps=11 format=3 uid="uid://qwp2wiwcai3b"]
+
+[ext_resource type="Shader" path="res://planet.gdshader" id="1_5ropd"]
+[ext_resource type="Script" path="res://main.gd" id="3_8sc0u"]
+[ext_resource type="Shader" path="res://starbackground.gdshader" id="3_dgoqo"]
+[ext_resource type="Script" path="res://starbackground.gd" id="3_espjc"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_lyv1y"]
+shader = ExtResource("3_dgoqo")
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_jmmr8"]
+noise_type = 2
+frequency = 1.0
+fractal_type = 0
+cellular_return_type = 0
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_6uqgi"]
+noise = SubResource("FastNoiseLite_jmmr8")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_gynki"]
+shader = ExtResource("1_5ropd")
+shader_parameter/angle = null
+shader_parameter/radius = 1.0
+shader_parameter/axis = null
+shader_parameter/coords = Vector2(1, 1)
+shader_parameter/color_main = null
+shader_parameter/color_light = null
+shader_parameter/color_dark = null
+shader_parameter/light_source = Vector3(0, 0, 0)
+shader_parameter/light_axis = null
+shader_parameter/light_angle = null
+shader_parameter/lower_atmo_color = null
+shader_parameter/higher_atmo_color = null
+shader_parameter/atmo_thickness = 1.0
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_rbvsh"]
+noise_type = 3
+frequency = 0.1
+
+[sub_resource type="NoiseTexture3D" id="NoiseTexture3D_43sej"]
+noise = SubResource("FastNoiseLite_rbvsh")
+
+[node name="Node2D" type="Node2D"]
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="."]
+offset_right = 1280.0
+offset_bottom = 720.0
+stretch = true
+stretch_shrink = 4
+
+[node name="SubViewport" type="SubViewport" parent="SubViewportContainer"]
+unique_name_in_owner = true
+handle_input_locally = false
+size = Vector2i(320, 180)
+size_2d_override = Vector2i(320, 180)
+render_target_update_mode = 4
+
+[node name="Camera2D" type="Camera2D" parent="SubViewportContainer/SubViewport"]
+anchor_mode = 0
+
+[node name="Background" type="Node2D" parent="SubViewportContainer/SubViewport"]
+material = SubResource("ShaderMaterial_lyv1y")
+script = ExtResource("3_espjc")
+star_noise_texture = SubResource("NoiseTexture2D_6uqgi")
+
+[node name="Planet" type="Node2D" parent="SubViewportContainer/SubViewport"]
+material = SubResource("ShaderMaterial_gynki")
+script = ExtResource("3_8sc0u")
+noise_texture = SubResource("NoiseTexture3D_43sej")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="Button" type="Button" parent="CanvasLayer"]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = -47.0
+offset_right = 96.0
+offset_bottom = -16.0
+grow_vertical = 0
+text = "Generate"
+
+[node name="FPS" type="Label" parent="CanvasLayer"]
+unique_name_in_owner = true
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 56.0
+offset_bottom = 39.0
+text = "FPS: "
+
+[connection signal="button_up" from="CanvasLayer/Button" to="SubViewportContainer/SubViewport/Background" method="refresh_noise"]
+[connection signal="button_up" from="CanvasLayer/Button" to="SubViewportContainer/SubViewport/Planet" method="gen_planet"]
