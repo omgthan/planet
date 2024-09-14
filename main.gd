@@ -87,15 +87,15 @@ func gen_colors() -> void:
 		planet_color_main.b * 1.2,
 	)
 
-	lower_atmo_color = Vector3(
-		randf_range(0.7, 0.9),
-		randf_range(0.5, 0.6),
-		randf_range(0.3, 0.5)
-	)
 	higher_atmo_color = Vector3(
-		randf_range(0.4, 0.6),
-		randf_range(0.5, 0.7),
-		randf_range(0.7, 1.0)
+		randf_range(0.5, 1.0),
+		randf_range(0.5, 1.0),
+		randf_range(0.5, 1.0)
+	)
+	lower_atmo_color = Vector3(
+		1.0 - higher_atmo_color.x + 0.5,
+		1.0 - higher_atmo_color.y + 0.5,
+		1.0 - higher_atmo_color.z + 0.5,
 	)
 
 func _draw() -> void:

@@ -97,21 +97,21 @@ void fragment() {
 	if (sqrt(dot(depth,depth)) > 0.999) {
 		COLOR = vec4(
 			// choose the max between background space color and the actual color
-			max(vec3(0.05, 0.065, 0.09), color_light.rgb * diffuse + (atmo_diffuse * (atmo_thickness - 1.0) / 0.2) * 0.75),
+			max(vec3(0.05, 0.065, 0.09), color_light.rgb * diffuse + (((atmo_thickness - 1.0) / 0.2) * atmo_diffuse * pow(circle_distance, 3.0))),
 			float(circle_distance < 1.0)
 		);
 	}
 	else if (sqrt(dot(depth,depth)) < 0.7){
 		COLOR = vec4(
 			// choose the max between background space color and the actual color
-			max(vec3(0.05, 0.065, 0.09), color_dark.rgb * diffuse + (atmo_diffuse * (atmo_thickness - 1.0) / 0.2) * 0.75),
+			max(vec3(0.05, 0.065, 0.09), color_dark.rgb * diffuse + (((atmo_thickness - 1.0) / 0.2) * atmo_diffuse * pow(circle_distance, 3.0))),
 			float(circle_distance < 1.0)
 		);
 	}
 	else {
 		COLOR = vec4(
 			// choose the max between background space color and the actual color
-			max(vec3(0.05, 0.065, 0.09), color_main.rgb * diffuse + (atmo_diffuse * (atmo_thickness - 1.0) / 0.2) * 0.75),
+			max(vec3(0.05, 0.065, 0.09), color_main.rgb * diffuse + (((atmo_thickness - 1.0) / 0.2) * atmo_diffuse * pow(circle_distance, 3.0))),
 			float(circle_distance < 1.0)
 		);
 	}
