@@ -77,7 +77,7 @@ void fragment() {
 		i don't remember what this does exactly, i think it changes
 		the bounds of the point to be between 0 and 1
 	*/
-	point = point/2.0 + 0.5;
+	//point = point/2.0 + 0.5;
 	
 	// get the noise value at the current point
 	vec4 surface_noise = texture(noise_texture, abs(point));
