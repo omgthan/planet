@@ -52,7 +52,7 @@ func gen_planet() -> void:
 	noise_texture.noise.seed = randi()
 	noise_texture.noise.frequency = 0.1 * (radius/Globals.planet_render_res.y)
 
-	light_source = axis.cross(Vector3(1,1,1))
+	light_source = axis.cross(Vector3(10,10,10))
 	atmo_thickness = randf_range(1.0, 1.2)
 
 	set_shader_params()
