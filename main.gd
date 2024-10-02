@@ -39,8 +39,8 @@ func gen_planet() -> void:
 	angle = 0.0
 	rotation_speed = randf_range(0.01, 0.1)
 	planet_pos = Vector2(
-		randf_range(Globals.planet_render_res.x * 0.5, 1.5 * Globals.planet_render_res.x),
-		randf_range(Globals.planet_render_res.y * 0.5, 1.5 * Globals.planet_render_res.y)
+		randf_range(Globals.planet_render_res.x * 0.25, 0.75 * Globals.planet_render_res.x),
+		randf_range(Globals.planet_render_res.y * 0.25, 0.75 * Globals.planet_render_res.y)
 	)
 	axis = Vector3(
 		randf_range(-1,1),

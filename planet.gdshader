@@ -5,7 +5,7 @@ uniform vec3 SPACE_COLOR = vec3(0.0);
 uniform float angle; // current rotation angle of the planet
 uniform float radius = 1.0; // radius of the planet
 uniform vec3 axis; // axis to rotate the planet around
-uniform vec2 coords = vec2(1.0, 1.0); // position of the planet on the screen
+uniform vec2 coords = vec2(1.0, 1.0); // the center of the planet on the 2d screen
 
 uniform sampler3D noise_texture; // 3d noise texture for planet surface
 
@@ -44,29 +44,41 @@ mat3 rotation_from_axis_and_angle(vec3 rotate_axis, float rotate_angle) {
 }
 
 void fragment() {
-	// XY position on the sphere
+	/*
+		get the XY position on the sphere for the current pixel
+		the first part gets the offset of the pixel from the planet center
+			(planet origin pixel - current pixel)
+		second part scales the current pixel by the radius
+			e.g. with an offset of 20px and a radius of 40px, the final value is 0.5
+			every axis is scaled from 0 to 1
+	*/
 	vec2 pos = vec2(
-		-((coords.x)/2.0 - VERTEX.x) / radius,
-		-((coords.y)/2.0 - VERTEX.y) / radius
+		(coords.x - VERTEX.x) / radius,
+		(coords.y - VERTEX.y) / radius
 	);
 	
 	float atmo_radius = radius * atmo_thickness;
 	vec2 atmo_pos = vec2(
-		-((coords.x)/2.0 - VERTEX.x) / atmo_radius,
-		-((coords.y)/2.0 - VERTEX.y) / atmo_radius
+		(coords.x - VERTEX.x) / atmo_radius,
+		(coords.y - VERTEX.y) / atmo_radius
 	);
 	
-	// distance from the center of the sphere using XY, given the z position
-	float z_dist = sqrt(1.0 - dot(pos,pos));
-	float atmo_z_dist = sqrt(1.0 - dot(atmo_pos, atmo_pos));
+	/*
+		3d point on the sphere, combining pos (XY) and the distance formula using
+		pos to get the z value of the point
+	*/
+	vec3 point = vec3(pos, sqrt(1.0 - dot(pos,pos)));
+	vec3 atmo_point = vec3(atmo_pos, sqrt(1.0 - dot(atmo_pos, atmo_pos)));
 	
-	// 3d point on the sphere, combining pos (XY) and z_dist (Z)
-	vec3 point = vec3(pos, z_dist);
-	vec3 atmo_point = vec3(atmo_pos, atmo_z_dist);
-	
-	// rotation around an axis
+	// get the rotation matrix around the custom axis at the new angle for this frame
 	mat3 planet_rotation = rotation_from_axis_and_angle(axis, angle);
 	
+	/*
+		light_dir:			light direction is the normalized light source, with the rotation matrix applied
+		light_color:		color of the light, set to be white but might change to be variable at some point
+		diffuse_strength:	get the diffuse strength at the current point, which is the light direction dot the surface normal
+		diffuse:			diffuse color
+	*/
 	vec3 light_dir = normalize(light_source) * planet_rotation;
 	vec3 light_color = vec3(1.0, 1.0, 1.0);
 	float diffuse_strength = max(0.0, dot(normalize(light_dir), point));
@@ -76,11 +88,10 @@ void fragment() {
 	point *= planet_rotation;
 	
 	/*
-		i don't remember what this does exactly, i think it changes
-		the bounds of the point to be between 0 and 1
-		
-		removing this line seems to make the surface texture
-		symmetrical, so keep this line
+		this scales the point values to be from 0 to 1 instead of
+		(presumably) -1 to 1. from a technical standpoint, not sure why
+		this works the way it does but it displays the planet correctly
+		removing this line seems to make the surface texture symmetrical
 	*/
 	point = point/2.0 + 0.5;
 	
@@ -93,12 +104,25 @@ void fragment() {
 	// distance from the pixel to the center of the circle
 	float circle_distance = sqrt(dot(pos,pos));
 	
+	/*
+		btw this section doesn't really have strictly defined rules in place, i was
+		just trying to find a way to display the different colors of the atmosphere
+		somewhat nicely
+		atmo_strength:			same as diffuse_strength but for atmosphere
+		atmo_color_strength:	scale the distance from the current point to a point on the axis
+									this effectively scales the current point to the maximum possible
+									distance that the light reaches
+		atmo_color:				scales the color between the normal color and sunrise/sunset color
+									based on the square of the atmo_color_strength
+		atmo_diffuse:			diffuse color of the atmosphere
+	*/
 	float atmo_strength = max(0.0, dot(normalize(light_dir), atmo_point));
 	float atmo_color_strength = distance(normalize(atmo_point), light_dir) / distance(normalize(axis), light_dir);
 	vec3 atmo_color = light_color * mix(higher_atmo_color, lower_atmo_color, pow(atmo_color_strength, 2.0));
 	vec3 atmo_diffuse = atmo_strength * atmo_color;
 	
 	// set the color, using the depth point to determine the color at the current point
+	// atmo strength application is done arbitrarily, no significance behind the formula
 	if (sqrt(dot(depth,depth)) > 0.999) {
 		COLOR = vec4(
 			// choose the max between background space color and the actual color
