@@ -9,16 +9,14 @@ uniform vec2 coords = vec2(1.0, 1.0); // the center of the planet on the 2d scre
 
 uniform sampler3D noise_texture; // 3d noise texture for planet surface
 
-uniform vec4 color_main; // the base color for the planet, rgb between 0.2 and 0.8
-uniform vec4 color_light; // 1.2 * rg of base, 0.8 * b of base
-uniform vec4 color_dark; // 0.8 * rg of base, 1.2 * b of base
+uniform vec4 color_main; // the base color for the planet
+uniform vec4 color_light; // lighter version of base
+uniform vec4 color_dark; // darker version of base
 
-uniform vec3 light_source = vec3(0.0, 0.0, 0.0);
-uniform vec3 light_axis;
-uniform vec3 light_angle;
+uniform vec3 light_source = vec3(0.0, 0.0, 0.0); // 3d origin of light source
 
-uniform vec3 lower_atmo_color;
-uniform vec3 higher_atmo_color;
+uniform vec3 horizon_atmo_color;
+uniform vec3 base_atmo_color;
 uniform float atmo_thickness = 1.0;
 
 mat3 rotation_from_axis_and_angle(vec3 rotate_axis, float rotate_angle) {
@@ -118,29 +116,31 @@ void fragment() {
 	*/
 	float atmo_strength = max(0.0, dot(normalize(light_dir), atmo_point));
 	float atmo_color_strength = distance(normalize(atmo_point), light_dir) / distance(normalize(axis), light_dir);
-	vec3 atmo_color = light_color * mix(higher_atmo_color, lower_atmo_color, pow(atmo_color_strength, 2.0));
+	vec3 atmo_color = light_color * mix(base_atmo_color, horizon_atmo_color, pow(atmo_color_strength, 2.0));
 	vec3 atmo_diffuse = atmo_strength * atmo_color;
+	
+	float has_atmo = atmo_thickness > 1.0 ? 1.0 : 0.0;
 	
 	// set the color, using the depth point to determine the color at the current point
 	// atmo strength application is done arbitrarily, no significance behind the formula
 	if (sqrt(dot(depth,depth)) > 0.999) {
 		COLOR = vec4(
 			// choose the max between background space color and the actual color
-			max(SPACE_COLOR, color_light.rgb * diffuse + (((atmo_thickness - 1.0) / 0.2) * atmo_diffuse * pow(circle_distance, 3.0))),
+			max(SPACE_COLOR, color_light.rgb * diffuse + has_atmo * (((atmo_thickness - 1.0) / 0.2) * atmo_diffuse * pow(circle_distance, 3.0))),
 			float(circle_distance < 1.0)
 		);
 	}
 	else if (sqrt(dot(depth,depth)) < 0.7){
 		COLOR = vec4(
 			// choose the max between background space color and the actual color
-			max(SPACE_COLOR, color_dark.rgb * diffuse + (((atmo_thickness - 1.0) / 0.2) * atmo_diffuse * pow(circle_distance, 3.0))),
+			max(SPACE_COLOR, color_dark.rgb * diffuse + has_atmo * (((atmo_thickness - 1.0) / 0.2) * atmo_diffuse * pow(circle_distance, 3.0))),
 			float(circle_distance < 1.0)
 		);
 	}
 	else {
 		COLOR = vec4(
 			// choose the max between background space color and the actual color
-			max(SPACE_COLOR, color_main.rgb * diffuse + (((atmo_thickness - 1.0) / 0.2) * atmo_diffuse * pow(circle_distance, 3.0))),
+			max(SPACE_COLOR, color_main.rgb * diffuse + has_atmo * (((atmo_thickness - 1.0) / 0.2) * atmo_diffuse * pow(circle_distance, 3.0))),
 			float(circle_distance < 1.0)
 		);
 	}
@@ -148,7 +148,7 @@ void fragment() {
 	
 	
 	// set the color of the atmosphere
-	if (circle_distance >= 1.0 && circle_distance < atmo_thickness) {
+	if (circle_distance > 1.0 && circle_distance < atmo_thickness && has_atmo == 1.0) {
 		COLOR = vec4(
 			max(SPACE_COLOR, atmo_diffuse),
 			pow(abs((circle_distance - atmo_thickness)) * (1.0 / (atmo_thickness - 1.0)), 2.0)

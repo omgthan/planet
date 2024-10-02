@@ -30,10 +30,8 @@ shader_parameter/color_main = null
 shader_parameter/color_light = null
 shader_parameter/color_dark = null
 shader_parameter/light_source = Vector3(0, 0, 0)
-shader_parameter/light_axis = null
-shader_parameter/light_angle = null
-shader_parameter/lower_atmo_color = null
-shader_parameter/higher_atmo_color = null
+shader_parameter/horizon_atmo_color = null
+shader_parameter/base_atmo_color = null
 shader_parameter/atmo_thickness = 1.0
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_rbvsh"]
