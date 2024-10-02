@@ -1,5 +1,7 @@
 shader_type canvas_item;
 
+uniform vec3 SPACE_COLOR = vec3(0.0);
+
 uniform float angle; // current rotation angle of the planet
 uniform float radius = 1.0; // radius of the planet
 uniform vec3 axis; // axis to rotate the planet around
@@ -100,21 +102,21 @@ void fragment() {
 	if (sqrt(dot(depth,depth)) > 0.999) {
 		COLOR = vec4(
 			// choose the max between background space color and the actual color
-			max(vec3(0.05, 0.065, 0.09), color_light.rgb * diffuse + (((atmo_thickness - 1.0) / 0.2) * atmo_diffuse * pow(circle_distance, 3.0))),
+			max(SPACE_COLOR, color_light.rgb * diffuse + (((atmo_thickness - 1.0) / 0.2) * atmo_diffuse * pow(circle_distance, 3.0))),
 			float(circle_distance < 1.0)
 		);
 	}
 	else if (sqrt(dot(depth,depth)) < 0.7){
 		COLOR = vec4(
 			// choose the max between background space color and the actual color
-			max(vec3(0.05, 0.065, 0.09), color_dark.rgb * diffuse + (((atmo_thickness - 1.0) / 0.2) * atmo_diffuse * pow(circle_distance, 3.0))),
+			max(SPACE_COLOR, color_dark.rgb * diffuse + (((atmo_thickness - 1.0) / 0.2) * atmo_diffuse * pow(circle_distance, 3.0))),
 			float(circle_distance < 1.0)
 		);
 	}
 	else {
 		COLOR = vec4(
 			// choose the max between background space color and the actual color
-			max(vec3(0.05, 0.065, 0.09), color_main.rgb * diffuse + (((atmo_thickness - 1.0) / 0.2) * atmo_diffuse * pow(circle_distance, 3.0))),
+			max(SPACE_COLOR, color_main.rgb * diffuse + (((atmo_thickness - 1.0) / 0.2) * atmo_diffuse * pow(circle_distance, 3.0))),
 			float(circle_distance < 1.0)
 		);
 	}
@@ -124,7 +126,7 @@ void fragment() {
 	// set the color of the atmosphere
 	if (circle_distance >= 1.0 && circle_distance < atmo_thickness) {
 		COLOR = vec4(
-			max(vec3(0.05, 0.065, 0.09), atmo_diffuse),
+			max(SPACE_COLOR, atmo_diffuse),
 			pow(abs((circle_distance - atmo_thickness)) * (1.0 / (atmo_thickness - 1.0)), 2.0)
 		);
 	}

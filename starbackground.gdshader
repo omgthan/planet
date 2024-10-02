@@ -1,5 +1,6 @@
 shader_type canvas_item;
 
+uniform vec3 SPACE_COLOR = vec3(0.0);
 uniform sampler2D noise_texture;
 
 void fragment() {
@@ -12,6 +13,6 @@ void fragment() {
 		COLOR = vec4(0.24, 0.24, 0.24, 1.0);
 	}
 	else {
-		COLOR = vec4(0.05, 0.065, 0.09, 1.0);
+		COLOR = vec4(SPACE_COLOR, 1.0);
 	}
 }

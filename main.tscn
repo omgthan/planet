@@ -8,6 +8,7 @@
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_lyv1y"]
 shader = ExtResource("3_dgoqo")
+shader_parameter/SPACE_COLOR = Vector3(0, 0, 0)
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_jmmr8"]
 noise_type = 2
@@ -20,6 +21,7 @@ noise = SubResource("FastNoiseLite_jmmr8")
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_gynki"]
 shader = ExtResource("1_5ropd")
+shader_parameter/SPACE_COLOR = Vector3(0, 0, 0)
 shader_parameter/angle = null
 shader_parameter/radius = 1.0
 shader_parameter/axis = null

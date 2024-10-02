@@ -22,6 +22,7 @@ var atmo_thickness : float = 1.0
 
 func _ready() -> void:
 	gen_planet()
+	material.set_shader_parameter("SPACE_COLOR", Globals.SPACE_COLOR)
 
 
 func _process(delta: float) -> void:
