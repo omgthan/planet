@@ -2,17 +2,16 @@ shader_type canvas_item;
 
 uniform vec3 SPACE_COLOR = vec3(0.0);
 uniform sampler2D noise_texture;
+const vec3 STAR_COLOR = vec3(0.2);
 
 void fragment() {
 	vec2 pos = VERTEX;
 	
-	vec4 star_noise = texture(noise_texture, UV);
-	vec3 brightness = abs(star_noise.xyz);
+	float brightness = texture(noise_texture, UV).r;
 	
-	if (sqrt(dot(brightness,brightness)) > 1.6) {
-		COLOR = vec4(0.24, 0.24, 0.24, 1.0);
-	}
-	else {
+	if (brightness > 0.95) {
+		COLOR = mix(vec4(STAR_COLOR, 1.0), vec4(SPACE_COLOR, 1.0), 0.35);
+	} else {
 		COLOR = vec4(SPACE_COLOR, 1.0);
 	}
 }
