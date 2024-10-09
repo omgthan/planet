@@ -20,6 +20,9 @@ var light_source : Vector3 = Vector3(1.0, 1.0, 1.0)	# 3D origin of light source
 var base_atmo_color : Vector3 = Vector3(1.0, 1.0, 1.0)
 var horizon_atmo_color : Vector3 = Vector3(0.0, 0.0, 0.0)
 
+var atmo_color_min : float = 0.25
+var atmo_color_max : float = 1.0
+
 # Thickness of the atmosphere
 var atmo_thickness : float = 1.0
 
@@ -108,17 +111,17 @@ func gen_colors() -> void:
 
 	# Generate base atmosphere color
 	base_atmo_color = Vector3(
-		randf_range(0.5, 1.0),
-		randf_range(0.5, 1.0),
-		randf_range(0.5, 1.0)
+		randf_range(atmo_color_min, atmo_color_max),
+		randf_range(atmo_color_min, atmo_color_max),
+		randf_range(atmo_color_min, atmo_color_max)
 	)
 	# Horizon color is "inverse" of base color
 	# max - value + min
 	# e.g. 1.0-0.8+0.5 = 0.2+0.5 = 0.7 
 	horizon_atmo_color = Vector3(
-		1.0 - base_atmo_color.x + 0.5,
-		1.0 - base_atmo_color.y + 0.5,
-		1.0 - base_atmo_color.z + 0.5,
+		atmo_color_max - base_atmo_color.x + atmo_color_min,
+		atmo_color_max - base_atmo_color.y + atmo_color_min,
+		atmo_color_max - base_atmo_color.z + atmo_color_min
 	)
 
 # Draw a white rectangle over the screen, but the shader only renders the

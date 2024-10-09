@@ -15,10 +15,11 @@ uniform vec3 color_dark; // darker version of base
 
 uniform vec3 light_source = vec3(0.0, 0.0, 0.0); // 3d origin of light source
 
-uniform vec3 horizon_atmo_color;
-uniform vec3 base_atmo_color;
-uniform float atmo_thickness = 1.0;
+uniform vec3 horizon_atmo_color; // atmosphere color at the horizon
+uniform vec3 base_atmo_color; // normal atmosphere color
+uniform float atmo_thickness = 1.0; // thickness of atmosphere
 
+// apply a matrix rotation to a point around an axis from a certain angle
 mat3 rotation_from_axis_and_angle(vec3 rotate_axis, float rotate_angle) {
 	// unit vector for the axis to rotate around
 	vec3 u = normalize(rotate_axis);
@@ -41,6 +42,7 @@ mat3 rotation_from_axis_and_angle(vec3 rotate_axis, float rotate_angle) {
 	);
 }
 
+// calculate the color to apply at the certain point on the planet
 vec3 get_color(
 	vec3 surface_color, vec3 surface_diffuse, vec3 atmo_diffuse,
 	float has_atmo, float distance_from_center
@@ -48,10 +50,12 @@ vec3 get_color(
 	return max(
 		SPACE_COLOR,
 		mix(
+			// mix the surface color with the atmosphere color
+			// bias determined by thickness of atmosphere scaled from 0 to 1 (* 3/4)
 			surface_color * surface_diffuse,
 			atmo_diffuse,
 			((atmo_thickness - 0.95) / (1.2 - 0.95)) * has_atmo * 0.75
-		) + surface_diffuse * pow(distance_from_center * 0.5, 2.0)
+		) + surface_diffuse * pow(distance_from_center * 0.5, 2.0) // make edges of planet brighter
 	);
 }
 
@@ -159,13 +163,11 @@ void fragment() {
 		);
 	}
 	
-	
-	
 	// set the color of the atmosphere
 	if (circle_distance > 1.0 && circle_distance < atmo_thickness && bool(has_atmo)) {
 		COLOR = vec4(
 			max(SPACE_COLOR, atmo_diffuse),
-			pow(abs((circle_distance - atmo_thickness)) * (1.0 / (atmo_thickness - 1.0)), 3.0)
+			pow(abs((circle_distance - atmo_thickness)) * (1.0 / (atmo_thickness - 1.0)), 4.0)
 		);
 	}
 }
