@@ -68,7 +68,7 @@ func gen_planet() -> void:
 	noise_texture.noise.frequency = 0.1 * (radius/Globals.planet_render_res.y)
 
 	# Make a new light source, orthogonal to the axis that the planet rotates around
-	light_source = axis.cross(Vector3(10,10,10))
+	light_source = axis.cross(Vector3(1,1,1))
 	
 	atmo_thickness = randf_range(0.95, 1.2)	# New random atmosphere thickness
 

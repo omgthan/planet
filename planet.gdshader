@@ -42,20 +42,24 @@ mat3 rotation_from_axis_and_angle(vec3 rotate_axis, float rotate_angle) {
 	);
 }
 
+vec3 mix_surface_atmo_color(vec3 surface_color, vec3 atmo_color, bool has_atmo) {
+	return mix(
+		// mix the surface color with the atmosphere color
+		// bias determined by thickness of atmosphere scaled from 0 to 1 (* 3/4)
+		surface_color,
+		atmo_color,
+		((atmo_thickness - 0.95) / (1.2 - 0.95)) * float(has_atmo) * 0.6
+	);
+}
+
 // calculate the color to apply at the certain point on the planet
 vec3 get_color(
-	vec3 surface_color, vec3 surface_diffuse, vec3 atmo_diffuse,
-	float has_atmo, float distance_from_center
+	vec3 surface_color, vec3 surface_diffuse, vec3 atmo_color,
+	bool has_atmo, float distance_from_center
 ) {
 	return max(
-		SPACE_COLOR,
-		mix(
-			// mix the surface color with the atmosphere color
-			// bias determined by thickness of atmosphere scaled from 0 to 1 (* 3/4)
-			surface_color * surface_diffuse,
-			atmo_diffuse,
-			((atmo_thickness - 0.95) / (1.2 - 0.95)) * has_atmo * 0.75
-		) + surface_diffuse * pow(distance_from_center * 0.5, 2.0) // make edges of planet brighter
+		mix(mix_surface_atmo_color(surface_color, atmo_color, has_atmo), SPACE_COLOR, 0.9),
+		mix_surface_atmo_color(surface_color, atmo_color, has_atmo) * surface_diffuse
 	);
 }
 
@@ -89,6 +93,7 @@ void fragment() {
 	// get the rotation matrix around the custom axis at the new angle for this frame
 	mat3 planet_rotation = rotation_from_axis_and_angle(axis, angle);
 	
+	
 	/*
 		light_dir:			light direction is the normalized light source, with the rotation matrix applied
 		light_color:		color of the light, set to be white but might change to be variable at some point
@@ -96,29 +101,12 @@ void fragment() {
 		diffuse:			diffuse color
 	*/
 	vec3 light_dir = normalize(light_source) * planet_rotation;
-	vec3 light_color = vec3(1.0, 1.0, 1.0);
+	vec3 light_color = vec3(1.0);
 	float diffuse_strength = max(0.0, dot(normalize(light_dir), point));
 	vec3 diffuse = diffuse_strength * light_color;
 	
 	// modify the point lookup by the rotation matrix to rotate the sphere
 	point *= planet_rotation;
-	
-	/*
-		this scales the point values to be from 0 to 1 instead of
-		(presumably) -1 to 1. from a technical standpoint, not sure why
-		this works the way it does but it displays the planet correctly
-		removing this line seems to make the surface texture symmetrical
-	*/
-	point = point/2.0 + 0.5;
-	
-	// get the noise value at the current point
-	vec4 surface_noise = texture(noise_texture, abs(point));
-	
-	// depth is the absolute value of the noise value at the point
-	vec3 depth = vec3(abs(surface_noise.xyz));
-	
-	// distance from the pixel to the center of the circle
-	float circle_distance = sqrt(dot(pos,pos));
 	
 	/*
 		btw this section doesn't really have strictly defined rules in place, i was
@@ -135,39 +123,62 @@ void fragment() {
 	float atmo_strength = max(0.0, dot(normalize(light_dir), atmo_point));
 	float atmo_color_strength = distance(normalize(atmo_point), light_dir) / distance(normalize(axis), light_dir);
 	vec3 atmo_color = light_color * mix(base_atmo_color, horizon_atmo_color, pow(atmo_color_strength, 2.0));
+	vec3 atmo_color_surface = light_color * mix(horizon_atmo_color, base_atmo_color, pow(diffuse_strength, 2.0));
 	vec3 atmo_diffuse = atmo_strength * atmo_color;
 	
-	float has_atmo = atmo_thickness > 1.0 ? 1.0 : 0.0;
+	bool has_atmo = atmo_thickness > 1.0;
+	
+	/*
+		this scales the point values to be from 0 to 1 instead of
+		(presumably) -1 to 1. from a technical standpoint, not sure why
+		this works the way it does but it displays the planet correctly
+		removing this line seems to make the surface texture symmetrical
+	*/
+	point = point/2.0 + 0.5;
+	atmo_point = atmo_point/(atmo_thickness * 2.0) + atmo_thickness/2.0;
+	
+	// get the noise value at the current point
+	vec4 surface_noise = texture(noise_texture, abs(point));
+	
+	// depth is the absolute value of the noise value at the point
+	vec3 depth = vec3(abs(surface_noise.xyz));
+	
+	// distance from the pixel to the center of the circle
+	float circle_distance = sqrt(dot(pos,pos));
 	
 	// set the color, using the depth point to determine the color at the current point
 	// atmo strength application is done arbitrarily, no significance behind the formula
 	if (sqrt(dot(depth,depth)) > 0.999) {
 		COLOR = vec4(
 			// choose the max between background space color and the actual color
-			get_color(color_light, diffuse, atmo_diffuse, has_atmo, circle_distance),
+			get_color(color_light, diffuse, atmo_color_surface, has_atmo, circle_distance),
 			float(circle_distance < 1.0)
 		);
 	}
 	else if (sqrt(dot(depth,depth)) < 0.7){
 		COLOR = vec4(
 			// choose the max between background space color and the actual color
-			get_color(color_dark, diffuse, atmo_diffuse, has_atmo, circle_distance),
+			get_color(color_dark, diffuse, atmo_color_surface, has_atmo, circle_distance),
 			float(circle_distance < 1.0)
 		);
 	}
 	else {
 		COLOR = vec4(
 			// choose the max between background space color and the actual color
-			get_color(color_main, diffuse, atmo_diffuse, has_atmo, circle_distance),
+			get_color(color_main, diffuse, atmo_color_surface, has_atmo, circle_distance),
 			float(circle_distance < 1.0)
 		);
 	}
 	
 	// set the color of the atmosphere
-	if (circle_distance > 1.0 && circle_distance < atmo_thickness && bool(has_atmo)) {
-		COLOR = vec4(
-			max(SPACE_COLOR, atmo_diffuse),
-			pow(abs((circle_distance - atmo_thickness)) * (1.0 / (atmo_thickness - 1.0)), 4.0)
-		);
+	if (circle_distance >= 1.0 && circle_distance < atmo_thickness) {
+		if (bool(has_atmo)) {
+			COLOR = vec4(
+				atmo_diffuse,
+				pow(abs(circle_distance - atmo_thickness) / (0.2), 3.0) * atmo_strength
+			);
+		} else {
+			COLOR = vec4(0.0);
+		}
 	}
 }
