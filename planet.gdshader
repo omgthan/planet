@@ -55,10 +55,10 @@ vec3 mix_surface_atmo_color(vec3 surface_color, vec3 atmo_color, bool has_atmo) 
 // calculate the color to apply at the certain point on the planet
 vec3 get_color(
 	vec3 surface_color, vec3 surface_diffuse, vec3 atmo_color,
-	bool has_atmo, float distance_from_center
+	bool has_atmo, float distance_from_light
 ) {
 	return max(
-		mix(mix_surface_atmo_color(surface_color, atmo_color, has_atmo), SPACE_COLOR, 0.9),
+		mix(mix_surface_atmo_color(surface_color, atmo_color, has_atmo), SPACE_COLOR, 0.98),
 		mix_surface_atmo_color(surface_color, atmo_color, has_atmo) * surface_diffuse
 	);
 }
@@ -145,27 +145,28 @@ void fragment() {
 	
 	// distance from the pixel to the center of the circle
 	float circle_distance = sqrt(dot(pos,pos));
+	float dist_from_light = distance(normalize(point), light_dir);
 	
 	// set the color, using the depth point to determine the color at the current point
 	// atmo strength application is done arbitrarily, no significance behind the formula
 	if (sqrt(dot(depth,depth)) > 0.999) {
 		COLOR = vec4(
 			// choose the max between background space color and the actual color
-			get_color(color_light, diffuse, atmo_color_surface, has_atmo, circle_distance),
+			get_color(color_light, diffuse, atmo_color_surface, has_atmo, dist_from_light),
 			float(circle_distance < 1.0)
 		);
 	}
 	else if (sqrt(dot(depth,depth)) < 0.7){
 		COLOR = vec4(
 			// choose the max between background space color and the actual color
-			get_color(color_dark, diffuse, atmo_color_surface, has_atmo, circle_distance),
+			get_color(color_dark, diffuse, atmo_color_surface, has_atmo, dist_from_light),
 			float(circle_distance < 1.0)
 		);
 	}
 	else {
 		COLOR = vec4(
 			// choose the max between background space color and the actual color
-			get_color(color_main, diffuse, atmo_color_surface, has_atmo, circle_distance),
+			get_color(color_main, diffuse, atmo_color_surface, has_atmo, dist_from_light),
 			float(circle_distance < 1.0)
 		);
 	}

@@ -20,11 +20,14 @@ var light_source : Vector3 = Vector3(1.0, 1.0, 1.0)	# 3D origin of light source
 var base_atmo_color : Vector3 = Vector3(1.0, 1.0, 1.0)
 var horizon_atmo_color : Vector3 = Vector3(0.0, 0.0, 0.0)
 
-var atmo_color_min : float = 0.25
-var atmo_color_max : float = 1.0
-
 # Thickness of the atmosphere
 var atmo_thickness : float = 1.0
+
+# Minimum and maximum color values
+const PLANET_COLOR_MIN : float = 0.35
+const PLANET_COLOR_MAX : float = 1.0
+const ATMO_COLOR_MIN : float = 0.25
+const ATMO_COLOR_MAX : float = 1.0
 
 func _ready() -> void:
 	# Generate a planet upon loading in
@@ -92,36 +95,36 @@ func set_shader_params() -> void:
 func gen_colors() -> void:
 	# Generate random main color
 	planet_color_main = Color(
-		clamp(randf(), 0.5, 0.9),
-		clamp(randf(), 0.5, 0.9),
-		clamp(randf(), 0.5, 0.9),
+		clamp(randf(), PLANET_COLOR_MIN, PLANET_COLOR_MAX),
+		clamp(randf(), PLANET_COLOR_MIN, PLANET_COLOR_MAX),
+		clamp(randf(), PLANET_COLOR_MIN, PLANET_COLOR_MAX),
 	)
 	# Light color is slightly more yellow than main
 	planet_color_light = Color(
-		planet_color_main.r * 1.2,
-		planet_color_main.g * 1.2,
-		planet_color_main.b * 0.8
+		planet_color_main.r * 1.1,
+		planet_color_main.g * 1.1,
+		planet_color_main.b * 0.9
 	)
 	# Dark color is slightly more blue than main
 	planet_color_dark = Color(
-		planet_color_main.r * 0.8,
-		planet_color_main.g * 0.8,
-		planet_color_main.b * 1.2,
+		planet_color_main.r * 0.9,
+		planet_color_main.g * 0.9,
+		planet_color_main.b * 1.1,
 	)
 
 	# Generate base atmosphere color
 	base_atmo_color = Vector3(
-		randf_range(atmo_color_min, atmo_color_max),
-		randf_range(atmo_color_min, atmo_color_max),
-		randf_range(atmo_color_min, atmo_color_max)
+		randf_range(ATMO_COLOR_MIN, ATMO_COLOR_MAX),
+		randf_range(ATMO_COLOR_MIN, ATMO_COLOR_MAX),
+		randf_range(ATMO_COLOR_MIN, ATMO_COLOR_MAX)
 	)
 	# Horizon color is "inverse" of base color
 	# max - value + min
 	# e.g. 1.0-0.8+0.5 = 0.2+0.5 = 0.7 
 	horizon_atmo_color = Vector3(
-		atmo_color_max - base_atmo_color.x + atmo_color_min,
-		atmo_color_max - base_atmo_color.y + atmo_color_min,
-		atmo_color_max - base_atmo_color.z + atmo_color_min
+		ATMO_COLOR_MAX - base_atmo_color.x + ATMO_COLOR_MIN,
+		ATMO_COLOR_MAX - base_atmo_color.y + ATMO_COLOR_MIN,
+		ATMO_COLOR_MAX - base_atmo_color.z + ATMO_COLOR_MIN
 	)
 
 # Draw a white rectangle over the screen, but the shader only renders the
