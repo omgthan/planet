@@ -1,13 +1,13 @@
 [gd_scene load_steps=12 format=3 uid="uid://qwp2wiwcai3b"]
 
-[ext_resource type="Shader" path="res://planet.gdshader" id="1_5ropd"]
-[ext_resource type="Script" path="res://planet_viewport_container.gd" id="1_sc75b"]
-[ext_resource type="Script" path="res://main.gd" id="3_8sc0u"]
-[ext_resource type="Shader" path="res://starbackground.gdshader" id="3_dgoqo"]
-[ext_resource type="Script" path="res://starbackground.gd" id="3_espjc"]
+[ext_resource type="Script" path="res://scripts/planet_viewport_container.gd" id="1_0llsk"]
+[ext_resource type="Shader" path="res://scripts/shaders/starbackground.gdshader" id="2_ifwen"]
+[ext_resource type="Script" path="res://scripts/starbackground.gd" id="3_pbfa8"]
+[ext_resource type="Shader" path="res://scripts/shaders/planet.gdshader" id="4_qmfxm"]
+[ext_resource type="Script" path="res://scripts/main.gd" id="5_qwbc5"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_lyv1y"]
-shader = ExtResource("3_dgoqo")
+shader = ExtResource("2_ifwen")
 shader_parameter/SPACE_COLOR = Vector3(0, 0, 0)
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_jmmr8"]
@@ -20,7 +20,7 @@ cellular_return_type = 0
 noise = SubResource("FastNoiseLite_jmmr8")
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_gynki"]
-shader = ExtResource("1_5ropd")
+shader = ExtResource("4_qmfxm")
 shader_parameter/SPACE_COLOR = Vector3(0, 0, 0)
 shader_parameter/angle = null
 shader_parameter/radius = 1.0
@@ -47,7 +47,7 @@ noise = SubResource("FastNoiseLite_rbvsh")
 offset_right = 1280.0
 offset_bottom = 720.0
 stretch = true
-script = ExtResource("1_sc75b")
+script = ExtResource("1_0llsk")
 
 [node name="SubViewport" type="SubViewport" parent="PlanetViewportContainer"]
 handle_input_locally = false
@@ -60,12 +60,12 @@ anchor_mode = 0
 
 [node name="Background" type="Node2D" parent="PlanetViewportContainer/SubViewport"]
 material = SubResource("ShaderMaterial_lyv1y")
-script = ExtResource("3_espjc")
+script = ExtResource("3_pbfa8")
 star_noise_texture = SubResource("NoiseTexture2D_6uqgi")
 
 [node name="Planet" type="Node2D" parent="PlanetViewportContainer/SubViewport"]
 material = SubResource("ShaderMaterial_gynki")
-script = ExtResource("3_8sc0u")
+script = ExtResource("5_qwbc5")
 noise_texture = SubResource("NoiseTexture3D_43sej")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]

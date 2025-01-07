@@ -32,7 +32,7 @@ const ATMO_COLOR_MAX : float = 1.0
 func _ready() -> void:
 	# Generate a planet upon loading in
 	gen_planet()
-	
+
 	# Send global space color to shader
 	material.set_shader_parameter("SPACE_COLOR", Globals.SPACE_COLOR)
 
@@ -72,7 +72,7 @@ func gen_planet() -> void:
 
 	# Make a new light source, orthogonal to the axis that the planet rotates around
 	light_source = axis.cross(Vector3(1,1,1))
-	
+
 	atmo_thickness = randf_range(0.95, 1.2)	# New random atmosphere thickness
 
 	set_shader_params()	# Update the shader parameters
@@ -120,7 +120,7 @@ func gen_colors() -> void:
 	)
 	# Horizon color is "inverse" of base color
 	# max - value + min
-	# e.g. 1.0-0.8+0.5 = 0.2+0.5 = 0.7 
+	# e.g. 1.0-0.8+0.5 = 0.2+0.5 = 0.7
 	horizon_atmo_color = Vector3(
 		ATMO_COLOR_MAX - base_atmo_color.x + ATMO_COLOR_MIN,
 		ATMO_COLOR_MAX - base_atmo_color.y + ATMO_COLOR_MIN,

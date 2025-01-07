@@ -76,24 +76,24 @@ void fragment() {
 		(coords.x - VERTEX.x) / radius,
 		(coords.y - VERTEX.y) / radius
 	);
-	
+
 	float atmo_radius = radius * atmo_thickness;
 	vec2 atmo_pos = vec2(
 		(coords.x - VERTEX.x) / atmo_radius,
 		(coords.y - VERTEX.y) / atmo_radius
 	);
-	
+
 	/*
 		3d point on the sphere, combining pos (XY) and the distance formula using
 		pos to get the z value of the point
 	*/
 	vec3 point = vec3(pos, sqrt(1.0 - dot(pos,pos)));
 	vec3 atmo_point = vec3(atmo_pos, sqrt(1.0 - dot(atmo_pos, atmo_pos)));
-	
+
 	// get the rotation matrix around the custom axis at the new angle for this frame
 	mat3 planet_rotation = rotation_from_axis_and_angle(axis, angle);
-	
-	
+
+
 	/*
 		light_dir:			light direction is the normalized light source, with the rotation matrix applied
 		light_color:		color of the light, set to be white but might change to be variable at some point
@@ -104,10 +104,10 @@ void fragment() {
 	vec3 light_color = vec3(1.0);
 	float diffuse_strength = max(0.0, dot(normalize(light_dir), point));
 	vec3 diffuse = diffuse_strength * light_color;
-	
+
 	// modify the point lookup by the rotation matrix to rotate the sphere
 	point *= planet_rotation;
-	
+
 	/*
 		btw this section doesn't really have strictly defined rules in place, i was
 		just trying to find a way to display the different colors of the atmosphere
@@ -125,9 +125,9 @@ void fragment() {
 	vec3 atmo_color = light_color * mix(base_atmo_color, horizon_atmo_color, pow(atmo_color_strength, 2.0));
 	vec3 atmo_color_surface = light_color * mix(horizon_atmo_color, base_atmo_color, pow(diffuse_strength, 2.0));
 	vec3 atmo_diffuse = atmo_strength * atmo_color;
-	
+
 	bool has_atmo = atmo_thickness > 1.0;
-	
+
 	/*
 		this scales the point values to be from 0 to 1 instead of
 		(presumably) -1 to 1. from a technical standpoint, not sure why
@@ -136,17 +136,17 @@ void fragment() {
 	*/
 	point = point/2.0 + 0.5;
 	atmo_point = atmo_point/(atmo_thickness * 2.0) + atmo_thickness/2.0;
-	
+
 	// get the noise value at the current point
 	vec4 surface_noise = texture(noise_texture, abs(point));
-	
+
 	// depth is the absolute value of the noise value at the point
 	vec3 depth = vec3(abs(surface_noise.xyz));
-	
+
 	// distance from the pixel to the center of the circle
 	float circle_distance = sqrt(dot(pos,pos));
 	float dist_from_light = distance(normalize(point), light_dir);
-	
+
 	// set the color, using the depth point to determine the color at the current point
 	// atmo strength application is done arbitrarily, no significance behind the formula
 	if (sqrt(dot(depth,depth)) > 0.999) {
@@ -170,7 +170,7 @@ void fragment() {
 			float(circle_distance < 1.0)
 		);
 	}
-	
+
 	// set the color of the atmosphere
 	if (circle_distance >= 1.0 && circle_distance < atmo_thickness) {
 		if (bool(has_atmo)) {
